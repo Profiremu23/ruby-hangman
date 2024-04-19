@@ -5,11 +5,45 @@ class GameClass
   def initialize
     @contents = File.open('google-10000-english-no-swears.txt')
     @guess = ''
+    @guess_word = ''
     @guessable_word = ''
     @input = []
     @mistakes = 0
     @used_letters = []
     @word_list = []
+  end
+
+  def game_state
+    if @input.include?('_') == false
+      puts "Congratulations! You have sucessfully guessed the word #{@guess_word}!"
+    elsif @mistakes == 7
+      hangman_state
+    else
+      guessing
+    end
+  end
+
+  def hangman_state
+    if @mistakes.zero?
+      print "   _____      \n   |/         \n   |          \n   |            \n   |            \n___|___________\n"
+    elsif @mistakes == 1
+      print "   _____      \n   |/  |      \n   |          \n   |            \n   |            \n___|___________\n"
+    elsif @mistakes == 2
+      print "   _____      \n   |/  |      \n   |   O      \n   |            \n   |            \n___|___________\n"
+    elsif @mistakes == 3
+      print "   _____      \n   |/  |      \n   |   O      \n   |   |        \n   |   ^        \n___|___________\n"
+    elsif @mistakes == 4
+      print "   _____      \n   |/  |      \n   |   O      \n   |  /|        \n   |   ^        \n___|___________\n"
+    elsif @mistakes == 5
+      print "   _____      \n   |/  |      \n   |   O      \n   |  /|\\      \n   |   ^        \n___|___________\n"
+    elsif @mistakes == 6
+      print "   _____      \n   |/  |      \n   |   O      \n   |  /|\\      \n   |  /^        \n___|___________\n"
+    elsif @mistakes == 7
+      print "   _____      \n   |/  |      \n   |   O      \n   |  /|\\      \n   |  /^\\      \n___|___________\n"
+      puts "Sorry, you have run out of lives! The solution was: #{@guess_word}"
+    else
+      puts 'Error! Something must went wrong!'
+    end
   end
 
   def generate_guessable
@@ -19,11 +53,18 @@ class GameClass
   end
 
   def break_guessable
-    puts guess_word = @word_list.sample
-    p @guessable_word = guess_word.strip.split(//)
-    p @input = Array.new(@guessable_word.size, '_')
-    @guess = gets.chomp
+    @guess_word = @word_list.sample
+    @guessable_word = @guess_word.strip.split(//)
+    @input = Array.new(@guessable_word.size, '_')
+  end
+
+  def guessing
+    puts hangman_state
+    p @input
+    p @used_letters
+    @guess = gets.chomp.downcase
     @used_letters << @guess
+    guess_check
   end
 
   def guess_check
@@ -37,13 +78,13 @@ class GameClass
       @mistakes += 1
     end
     p @input
-    p @used_letters
-    p @mistakes
+    game_state
   end
 
   def hangman
     generate_guessable
     break_guessable
+    guessing
     guess_check
   end
 end
