@@ -14,9 +14,9 @@ class GameClass
   end
 
   def game_state
-    if @input.include?('_') == false
+    if @input.include?('_') == false && @mistakes < 7
       puts "Congratulations! You have sucessfully guessed the word #{@guess_word}!"
-    elsif @mistakes == 7
+    elsif @mistakes == 7 && @input.include?('_') == true
       hangman_state
     else
       guessing
@@ -63,8 +63,14 @@ class GameClass
     p @input
     p @used_letters
     @guess = gets.chomp.downcase
-    @used_letters << @guess
-    guess_check
+    if @guess.size == 1 && @used_letters.include?(@guess) == false
+      @used_letters << @guess
+      guess_check
+    else
+      puts 'Invalid input! The guess is either already given or too long!'
+      @guess = gets.chomp.downcase
+      guessing
+    end
   end
 
   def guess_check
@@ -85,7 +91,6 @@ class GameClass
     generate_guessable
     break_guessable
     guessing
-    guess_check
   end
 end
 
