@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'json'
+
 # The game class for Hangman
 class GameClass
   def initialize
@@ -11,6 +13,12 @@ class GameClass
     @mistakes = 0
     @used_letters = []
     @word_list = []
+  end
+
+  def saving
+    Dir.mkdir 'saves' if Dir.exist?('saves') == false
+    Dir.chdir 'saves'
+    File.new('latest.json', 'w')
   end
 
   def game_state
@@ -66,6 +74,11 @@ class GameClass
     if @guess.size == 1 && @used_letters.include?(@guess) == false
       @used_letters << @guess
       guess_check
+    elsif @guess == 'save'
+      puts 'Saving the current game state...'
+      saving
+    elsif @guess == 'load_save'
+      puts 'Loading the last saved game state...'
     else
       puts 'Invalid input! The guess is either already given or too long!'
       @guess = gets.chomp.downcase
@@ -84,10 +97,13 @@ class GameClass
       @mistakes += 1
     end
     p @input
+    puts `clear`
     game_state
   end
 
   def hangman
+    puts `clear`
+    puts 'You can save your progress by typing "save", you can also load a previous save by typing "load_save"'
     generate_guessable
     break_guessable
     guessing
