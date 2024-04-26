@@ -15,10 +15,32 @@ class GameClass
     @word_list = []
   end
 
+  def to_json
+    JSON.dump ({
+      :guess_word => @guess_word,
+      :input => @input,
+      :mistakes => @mistakes,
+      :used_letters => @used_letters
+    })
+  end
+
+  def from_json(string)
+    data = JSON.parse string
+    self.new(data['guess_word'], data['input'], data['mistakes'], data['used_letters'])
+  end
+
   def saving
     Dir.mkdir 'saves' if Dir.exist?('saves') == false
     Dir.chdir 'saves'
-    File.new('latest.json', 'w')
+    f = File.new('latest.json', 'w')
+    f << to_json
+    f.close
+  end
+
+  def loading
+    f = File.new('latest.json', 'w')
+    from_json(f)
+    f.close
   end
 
   def game_state
@@ -62,7 +84,8 @@ class GameClass
 
   def break_guessable
     @guess_word = @word_list.sample
-    @guessable_word = @guess_word.strip.split(//)
+    @guess_word.strip!
+    @guessable_word = @guess_word.split(//)
     @input = Array.new(@guessable_word.size, '_')
   end
 
@@ -79,9 +102,9 @@ class GameClass
       saving
     elsif @guess == 'load_save'
       puts 'Loading the last saved game state...'
+      loading
     else
       puts 'Invalid input! The guess is either already given or too long!'
-      @guess = gets.chomp.downcase
       guessing
     end
   end
