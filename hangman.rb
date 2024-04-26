@@ -25,7 +25,7 @@ class GameClass
   end
 
   def from_json(string)
-    data = JSON.parse string
+    data = JSON.load string
     self.new(data['guess_word'], data['input'], data['mistakes'], data['used_letters'])
   end
 
@@ -38,6 +38,7 @@ class GameClass
   end
 
   def loading
+    Dir.chdir 'saves'
     f = File.new('latest.json', 'w')
     from_json(f)
     f.close
