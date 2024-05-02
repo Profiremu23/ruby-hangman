@@ -4,29 +4,24 @@ require 'json'
 
 # The game class for Hangman
 class GameClass
-  def initialize
-    @contents = File.open('google-10000-english-no-swears.txt')
-    @guess = ''
-    @guess_word = ''
-    @guessable_word = ''
-    @input = []
-    @mistakes = 0
-    @used_letters = []
-    @word_list = []
+  attr_accessor :guess, :guess_word, :guessable_word, :input, :mistakes, :used_letters
+
+  def initialize(guess, guess_word, guessable_word, input, mistakes, used_letters)
+    @guess = guess
+    @guess_word = guess_word
+    @guessable_word = guessable_word
+    @input = input
+    @mistakes = mistakes
+    @used_letters = used_letters
   end
 
   def to_json
-    JSON.dump ({
-      :guess_word => @guess_word,
-      :input => @input,
-      :mistakes => @mistakes,
-      :used_letters => @used_letters
-    })
+    JSON.generate({ guess: @guess, guess_word: @guess_word, guessable_word: @guessable_word, input: @input, mistakes: @mistakes, used_letters: @used_letters })
   end
 
-  def from_json(string)
-    data = JSON.load string
-    self.new(data['guess_word'], data['input'], data['mistakes'], data['used_letters'])
+  def self.from_json(string)
+    data = JSON.load(string)
+    self.new(data['guess'], data['guess_word'], data['guessable_word'], data['input'], data['mistakes'], data['used_letters'])
   end
 
   def saving
@@ -39,9 +34,9 @@ class GameClass
 
   def loading
     Dir.chdir 'saves'
-    f = File.new('latest.json', 'w')
-    from_json(f)
-    f.close
+    GameClass.from_json(File.read('latest.json'))
+    Dir.chdir '../'
+    guessing
   end
 
   def game_state
@@ -78,13 +73,15 @@ class GameClass
   end
 
   def generate_guessable
-    @contents.each do |word|
-      @word_list << word if word.length > 5 && word.length < 12
+    contents = File.open('google-10000-english-no-swears.txt')
+    word_list = []
+    contents.each do |word|
+      word_list << word if word.length > 5 && word.length < 12
     end
+    @guess_word = word_list.sample
   end
 
   def break_guessable
-    @guess_word = @word_list.sample
     @guess_word.strip!
     @guessable_word = @guess_word.split(//)
     @input = Array.new(@guessable_word.size, '_')
@@ -135,5 +132,5 @@ class GameClass
 end
 
 # Running the game
-hangman = GameClass.new
+hangman = GameClass.new('', '', '', [], 0, [])
 hangman.hangman
