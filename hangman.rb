@@ -6,7 +6,7 @@ require 'json'
 class GameClass
   attr_accessor :guess, :guess_word, :guessable_word, :input, :mistakes, :used_letters
 
-  def initialize(guess, guess_word, guessable_word, input, mistakes, used_letters)
+  def initialize(guess = '', guess_word = '', guessable_word = [], input = [], mistakes = 0, used_letters = [])
     @guess = guess
     @guess_word = guess_word
     @guessable_word = guessable_word
@@ -24,18 +24,19 @@ class GameClass
     self.new(data['guess'], data['guess_word'], data['guessable_word'], data['input'], data['mistakes'], data['used_letters'])
   end
 
-  def saving
+  def save_game
     Dir.mkdir 'saves' if Dir.exist?('saves') == false
-    Dir.chdir 'saves'
-    f = File.new('latest.json', 'w')
-    f << to_json
-    f.close
+    IO.write('saves/latest.json', to_json)
   end
 
-  def loading
-    Dir.chdir 'saves'
-    GameClass.from_json(File.read('latest.json'))
-    Dir.chdir '../'
+  def load_save
+    data = GameClass.from_json(File.read('saves/latest.json'))
+    @guess = data.guess
+    @guess_word = data.guess_word
+    @guessable_word = data.guessable_word
+    @input = data.input
+    @mistakes = data.mistakes
+    @used_letters = data.used_letters
     guessing
   end
 
@@ -96,11 +97,11 @@ class GameClass
       @used_letters << @guess
       guess_check
     elsif @guess == 'save'
-      puts 'Saving the current game state...'
-      saving
+      puts 'save_game the current game state...'
+      save_game
     elsif @guess == 'load_save'
-      puts 'Loading the last saved game state...'
-      loading
+      puts 'load_save the last saved game state...'
+      load_save
     else
       puts 'Invalid input! The guess is either already given or too long!'
       guessing
@@ -132,5 +133,5 @@ class GameClass
 end
 
 # Running the game
-hangman = GameClass.new('', '', '', [], 0, [])
+hangman = GameClass.new
 hangman.hangman
