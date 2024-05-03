@@ -46,7 +46,7 @@ class GameClass
   end
 
   ## Hangman game mechanics
-  # Determinating the current game state, victory and defeat conditions
+  # Determinating the current game state
   def game_state
     if @input.include?('_') == false && @mistakes < 7
       puts "Congratulations! You have sucessfully guessed the word #{@guess_word}!"
