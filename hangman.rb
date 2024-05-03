@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
+## Making sure that JSON is working for our game
 require 'json'
 
-# The game class for Hangman
+### The game class for Hangman
 class GameClass
   attr_accessor :guess, :guess_word, :guessable_word, :input, :mistakes, :used_letters
 
+  ## Initializing variables for the game
   def initialize(guess = '', guess_word = '', guessable_word = [], input = [], mistakes = 0, used_letters = [])
     @guess = guess
     @guess_word = guess_word
@@ -15,6 +17,7 @@ class GameClass
     @used_letters = used_letters
   end
 
+  ## Methods to save and load a Hangman game
   def to_json
     JSON.generate({ guess: @guess, guess_word: @guess_word, guessable_word: @guessable_word, input: @input, mistakes: @mistakes, used_letters: @used_letters })
   end
@@ -24,11 +27,13 @@ class GameClass
     self.new(data['guess'], data['guess_word'], data['guessable_word'], data['input'], data['mistakes'], data['used_letters'])
   end
 
+  # Generating a save game file
   def save_game
     Dir.mkdir 'saves' if Dir.exist?('saves') == false
     IO.write('saves/latest.json', to_json)
   end
 
+  # Loading a saved game and replacing the old variables with the saved variables from saves/latest.json
   def load_save
     data = GameClass.from_json(File.read('saves/latest.json'))
     @guess = data.guess
@@ -40,6 +45,8 @@ class GameClass
     guessing
   end
 
+  ## Hangman game mechanics
+  # Determinating the current game state, victory and defeat conditions
   def game_state
     if @input.include?('_') == false && @mistakes < 7
       puts "Congratulations! You have sucessfully guessed the word #{@guess_word}!"
@@ -50,6 +57,7 @@ class GameClass
     end
   end
 
+  # Hangman stickman status for displaying the number of mistakes
   def hangman_state
     if @mistakes.zero?
       print "   _____      \n   |/         \n   |          \n   |            \n   |            \n___|___________\n"
@@ -73,6 +81,7 @@ class GameClass
     end
   end
 
+  # First step for initializing a new Hangman game is to generate a random word to guess
   def generate_guessable
     contents = File.open('google-10000-english-no-swears.txt')
     word_list = []
@@ -82,12 +91,14 @@ class GameClass
     @guess_word = word_list.sample
   end
 
+  # Second step is to get a playable form of the selected word for Hangman by breaking it up by letters
   def break_guessable
     @guess_word.strip!
     @guessable_word = @guess_word.split(//)
     @input = Array.new(@guessable_word.size, '_')
   end
 
+  # Third step is to start typing letters to fill-in the blank letters!
   def guessing
     puts hangman_state
     p @input
@@ -97,17 +108,21 @@ class GameClass
       @used_letters << @guess
       guess_check
     elsif @guess == 'save'
-      puts 'save_game the current game state...'
+      puts `clear`
+      puts 'Saving the current game state...'
       save_game
     elsif @guess == 'load_save'
-      puts 'load_save the last saved game state...'
+      puts `clear`
+      puts 'Loading the last saved game state...'
       load_save
     else
-      puts 'Invalid input! The guess is either already given or too long!'
+      puts `clear`
+      puts 'Invalid input! The guess is either has more than one letter or is already entered!'
       guessing
     end
   end
 
+  # Fourth step is to check if the typed letter is included within the word to guess
   def guess_check
     if @guessable_word.include?(@guess)
       replace = @guessable_word.map.with_index { |x, i| i if x == @guess }
@@ -123,6 +138,7 @@ class GameClass
     game_state
   end
 
+  ## Executing the game flow
   def hangman
     puts `clear`
     puts 'You can save your progress by typing "save", you can also load a previous save by typing "load_save"'
@@ -132,6 +148,6 @@ class GameClass
   end
 end
 
-# Running the game
+## Running a singular Hangman game
 hangman = GameClass.new
 hangman.hangman
